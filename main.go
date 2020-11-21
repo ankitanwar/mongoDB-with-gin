@@ -41,10 +41,15 @@ func CreateUser(c *gin.Context) {
 //GetPeople : To reterive the Person from the database
 func GetPeople(c *gin.Context) {
 	findid, _ := primitive.ObjectIDFromHex(c.Param("id"))
-	var findPerson = &Person{}
-	findPerson.ID = findid
-	
-
+	var findPerson Person
+	collection := client.Database("learning").Collection("people")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	err := collection.FindOne(ctx, Person{ID: findid}).Decode(&findPerson)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, findPerson)
 }
 
 func mapURL() {
